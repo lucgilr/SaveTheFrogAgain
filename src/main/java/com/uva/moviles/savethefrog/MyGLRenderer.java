@@ -5,6 +5,8 @@ import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.util.Log;
 
+import java.util.ArrayList;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -26,9 +28,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
 
 
-    private Terreno[] cespeds = new Terreno[5];
-    private Terreno[] carreteras = new Terreno[5];
-    private Terreno[] rios = new Terreno[5];
+    private ArrayList<Terreno> terrenos = new ArrayList<>();
     //Color Verde en formato R G B A 0 = min 1 = max
     private float[] colorCesped = { 0.0f, 0.5f,0.0f,1.0f};
     private float[] colorCarretera = { 0.5f, 0.5f,0.5f,1.0f};
@@ -41,29 +41,17 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     private final float[] mTempMatrix = new float[16];
     private int[] _viewport;
 
-    private float movY = 4f;
+    private float movY = -2.5f;
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 
-        for (int i = 0; i < 5; i++) {
-            cespeds[i] = new Terreno();
-            carreteras[i] = new Terreno();
-            rios[i] = new Terreno();
-
-
-            Matrix.translateM(cespeds[i].mModelMatrix, 0, -5f, i, -3.0f);
-
-            if (i % 2 == 0) {
-                Matrix.translateM(rios[i].mModelMatrix, 0, -5f, i+1, -3.0f);
-            }else{
-                Matrix.translateM(carreteras[i].mModelMatrix, 0, -5f, i+1, -3.0f);
-            }
-
-
-
+        for (int i = 0; i < 10; i++) {
+            Terreno t = new Terreno();
+            Matrix.translateM(t.mModelMatrix,0,5f,i,-3f);
+            terrenos.add(t);
         }
 
     }
@@ -85,43 +73,31 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     public void onDrawFrame(GL10 gl) {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
-        Matrix.setLookAtM(mViewMatrix, 0, 2.5f, -1.0f, 3f, 2.5f, 0.8f, -3.0f, 0f, 2.0f, 0.0f);
+        //Matrix.setLookAtM(mViewMatrix, 0, 5f, -2.0f, 1f, 0f, 0f, -3.0f, 0f, 2.0f, 0.0f);
+        Matrix.setLookAtM(mViewMatrix, 0, 0f, 0f, 3f, 0f, 0f, 0f, 0f, 2.0f, 0.0f);
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
 
-        movY -= 0.001f;
-
-        for (int i = 0; i < 5; i++){
-            Matrix.scaleM(mScalationMatrix, 0, cespeds[i].mModelMatrix, 0, 20.0f, 1.0f, 1.0f);
+        movY -= 0.01f;
+        //El vertice donde se coloca es donde empiezas a definirlo (drawOrder en la clase)
+        for (int i = 0; i < 10; i+=2) {
+            Terreno t = terrenos.get(i);
+            Matrix.scaleM(mScalationMatrix, 0, t.mModelMatrix, 0, 5.0f, 1.0f, 1.0f);
             Matrix.multiplyMM(mTempMatrix, 0, mMVPMatrix, 0, mScalationMatrix, 0);
-            cespeds[i].draw(colorCesped, mTempMatrix);
-
-            Matrix.scaleM(mScalationMatrix, 0, carreteras[i].mModelMatrix, 0, 20.0f, 1.0f, 1.0f);
+            t.draw(colorCesped, mTempMatrix);
+            //Matrix.setIdentityM(terrenos.get(i).mModelMatrix, 0);
+            Matrix.translateM(terrenos.get(i).mModelMatrix, 0, -2.5f, -0.01f, -3f);
+            t = terrenos.get(i+1);
+            Matrix.scaleM(mScalationMatrix, 0, t.mModelMatrix, 0, 5.0f, 1.0f, 1.0f);
             Matrix.multiplyMM(mTempMatrix, 0, mMVPMatrix, 0, mScalationMatrix, 0);
-            carreteras[i].draw(colorCarretera, mTempMatrix);
-
-            Matrix.scaleM(mScalationMatrix, 0, rios[i].mModelMatrix, 0, 20.0f, 1.0f, 1.0f);
-            Matrix.multiplyMM(mTempMatrix, 0, mMVPMatrix, 0, mScalationMatrix, 0);
-            rios[i].draw(colorRio, mTempMatrix);
-
-            Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
-
-            Matrix.setIdentityM(cespeds[i].mModelMatrix, 0);
-            Matrix.translateM(cespeds[i].mModelMatrix, 0, -5f, movY, -3.0f);
-            Matrix.rotateM(cespeds[i].mModelMatrix, 0, -20.0f, 0.0f, 0.0f, 1.0f);
-
-            if( i % 2 == 0){
-                Matrix.setIdentityM(rios[i].mModelMatrix, 0);
-                Matrix.translateM(rios[i].mModelMatrix, 0, -5f, movY + 1, -3.0f);
-                Matrix.rotateM(rios[i].mModelMatrix, 0, -20.0f, 0.0f, 0.0f, 1.0f);
-            }else{
-                Matrix.setIdentityM(carreteras[i].mModelMatrix, 0);
-                Matrix.translateM(carreteras[i].mModelMatrix, 0, -5f, movY + 1, -3.0f);
-                Matrix.rotateM(carreteras[i].mModelMatrix, 0, -20.0f, 0.0f, 0.0f, 1.0f);
-            }
-
-
+            t.draw(colorCarretera, mTempMatrix);
+            Matrix.setIdentityM(terrenos.get(i+1).mModelMatrix, 0);
+            Matrix.translateM(terrenos.get(i+1).mModelMatrix, 0, -2.5f, movY + i+1, -3f);
 
         }
+
+        //if(movY % -3 == 0){
+            terrenos.add(terrenos.remove(0));
+        //}
 
 
 
