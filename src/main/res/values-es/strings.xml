@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Save the Frog</string>
+    <string name="inicioJugar">Jugar</string>
+    <string name="title_activity_pantalla_inicio">Save the Frog</string>
+</resources>

@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Save the Frog</string>
+    <string name="title_activity_pantalla_inicio">Save the Frog</string>
+    <string name="inicioJugar">Play</string>
+</resources>
